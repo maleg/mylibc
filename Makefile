@@ -1,20 +1,37 @@
-OUT = ../libmylibc.a
+OUT = libmylibc.a
 CC = gcc
 ODIR = obj
-SDIR = src
+SDIR = .
+IDIR = .
 INC = -Iinc
+GLOBAL_LIBDIR = ..
 
-_OBJS = RIPEMD160.o common.o timer.o 
-OBJS = $(patsubst %,$(ODIR)/%,$(_OBJS))
+_DEPS = RIPEMD160.h common.h timer.h
+_OBJ = RIPEMD160.o common.o timer.o 
+LIBS = -lm
 
 
-$(ODIR)/%.o: $(SDIR)/%.c 
-	$(CC) -c $(INC) -o $@ $< $(CFLAGS) 
+
+
+DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
+
+OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
+
+$(ODIR)/%.o: $(SDIR)/%.S
+	$(CC) -c $(INC) -o $@ $^ $(CFLAGS) 
+
+$(ODIR)/%.o: $(SDIR)/%.c
+	$(CC) -c $(INC) -o $@ $^ $(CFLAGS) 
 
 $(OUT): $(OBJS) 
 	ar rvs $(OUT) $^
 
+$(DEPS):
 .PHONY: clean
 
 clean:
 	rm -f $(ODIR)/*.o $(OUT)
+	
+copy:
+	cp -f $(DEPS) $(GLOBAL_LIBDIR)
+	cp -f $(OUT) $(GLOBAL_LIBDIR)
