@@ -15,7 +15,7 @@ LIBS = -lm
 
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
-OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
+OBJS = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 $(ODIR)/%.o: $(SDIR)/%.S
 	$(CC) -c $(INC) -o $@ $^ $(CFLAGS) 
@@ -24,7 +24,7 @@ $(ODIR)/%.o: $(SDIR)/%.c
 	$(CC) -c $(INC) -o $@ $^ $(CFLAGS) 
 
 $(OUT): $(OBJS) 
-	ar rvs $(OUT) $^
+	ar rcs $(OUT) $^
 
 $(DEPS):
 .PHONY: clean

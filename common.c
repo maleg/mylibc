@@ -3,10 +3,13 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <unistd.h> // For write
+#include <stdint.h>
 
-#include "common.h"
+//#include "common.h"
 
-int memcmppos(void* inl, void* inr, int len){
+int memcmppos(void* inl, void* inr, int len)
+{
 	int rem = len;
 	while(rem>8){
 		if ( *(uint64_t*)inl != *(uint64_t*)inr ){
@@ -35,7 +38,45 @@ int memcmppos(void* inl, void* inr, int len){
 	return len-rem;
 }
 
+void memcpy_swap32(void* dest, void* src, int len)
+{
+	uint32_t* dest_p = dest;
+	uint32_t* src_p = src;
+	int i;
 
+	for (i=0 ; i<(len>>2) ; i++)
+	{
+		dest_p[i] = htobe32(src_p[i]);
+	}
+
+}
+
+void bytes_to_file(int file, char* str, int len)
+{
+	int ret = write(file, str,len);
+	if (ret != len)
+	{
+		printf("write_to_disk : Didn't write all the bytes.");
+		exit(EXIT_FAILURE);
+	}
+}
+
+void str_to_file(int file, char* str)
+{
+	int write_length = strlen(str);
+	int ret = write(file, str, write_length);
+	if (ret != write_length)
+	{
+		printf("write_to_disk : Didn't write all the bytes.");
+		exit(EXIT_FAILURE);
+	}
+}
+
+void strline_to_file(int file, char* str)
+{
+	str_to_file(file, str);
+	str_to_file(file, "\n");
+}
 
 //----------------------------------------------------
 //----------------------------------------------------
@@ -76,18 +117,19 @@ void bin2hex(char*out_p, unsigned char*in_p, int len)
 }
  
  
- void hex_dump(void *data, size_t len) {
+ void hex_dump(void *data, size_t len)
+{
     unsigned char *chr = data;
     for ( size_t pos = 0; pos < len; pos++, chr++ ) { printf("%02X ", *chr & 0xFF); }
 }
 
 // this function is mostly useless in a real implementation, were only using it for demonstration purposes
-void hexdump(const char* header, const uint8_t* data, int len)
+void hexdump_bytes_hn(const char* header, void* data_p, int len)
 {
     int c;
-   
-	printf("%s", header);
+    unsigned char * data = data_p;
 
+	printf("%s", header);
     c=0;
     while(c < len)
     {
@@ -96,23 +138,19 @@ void hexdump(const char* header, const uint8_t* data, int len)
     printf("\n");
 }
 
-void DumpBinBigEndian(void* ptr, int size)
+void hexdump_uint32_hn(const char* header, uint32_t* data, int len)
 {
-    unsigned char *b = (unsigned char*) ptr;
-    unsigned char byte;
-    int i, j;
+    int c;
 
-    for (i=0;i<size;i++)
+	printf("%s", header);
+    c=0;
+    while(c < len)
     {
-        for (j=7;j>=0;j--)
-        {
-            byte = (b[i] >> j) & 1;
-            printf("%u", byte);
-        }
+            printf("%.8X", data[c++]);
     }
-    puts("");
+    printf("\n");
 }
- 
+
  
  
 
@@ -140,7 +178,63 @@ msg_clear_bit(unsigned char* msg, int offset){
 	
 }
 
-static inline void 
+int
+get_bit(unsigned char* msg, int bit_offset){
+	int B = bit_offset >> 3;
+	int b = bit_offset & 0x07;
+	int ret = (msg[B] >> (7-b)) & 0x1;
+	return ret;
+}
+
+// Return string length in bytes
+int
+sprintf_bits(char * dest, void const * const src, int const size)
+{
+	unsigned char *in_p = (unsigned char*) src;
+	char *out_p = dest;
+	unsigned char byte;
+	int i, j, ret, len;
+
+	for (i=0;i<size;i++)
+	{
+		for (j=7;j>=0;j--)
+		{
+			byte = (in_p[i] >> j) & 1;
+			ret = sprintf(out_p, (byte == 1) ? "1 ":"-1 ");
+			out_p += ret;
+		}
+	}
+	len = out_p - dest;
+	dest[len-1] = '\n';
+	return len;
+}
+
+// Return string length in bytes
+char*
+str_bits(void const * const src, int const bytesize)
+{
+
+	static char buf[4096];
+	unsigned char *in_p = (unsigned char*) src;
+	char *out_p = buf;
+	unsigned char byte;
+	int i, j, ret, len;
+
+	for (i=0;i<bytesize;i++)
+	{
+		for (j=7;j>=0;j--)
+		{
+			byte = (in_p[i] >> j) & 1;
+			ret = sprintf(out_p, (byte == 1) ? "1 ":"0 ");
+			out_p += ret;
+		}
+	}
+	len = out_p - buf;
+	buf[len-1] = '\0';
+	return (char*)buf;
+}
+
+void
 incr_256bit(uint64_t* p_data, int qty)
 {
 	//printf("Increment\n");
@@ -187,6 +281,7 @@ int get_entropy8b(unsigned char * msg_p)
 	}
 	return max_consec;
 }
+
 int get_entropy16b(unsigned char * msg_p)
 {
 	int consec = 0, max_consec = 0;
@@ -211,49 +306,27 @@ int get_entropy16b(unsigned char * msg_p)
 	return max_consec;
 }
 
-void* ProcessBits(int startBit, int endBit, int level){
-	int idx;
-	int hashValid;
-	int bit, B, b;
-	static int mem[128][3] = {{0,0,0}};
+void ProcessBits(unsigned char hashIn[], int startBit, int endBit, int level)
+{
+	int bit, B, b, iter;
 
 	for (bit=startBit ; bit<=endBit ; bit++){
 		B = bit >> 3;
 		b = bit & 0x7;
 		hashIn[B] ^= 0x80>>b;
 
-		if (level == 1){
+		if (level == 1)
+		{
 			iter++;
-			//hexdump(hashIn, SHA256_DIGEST_LENGTH);
-				//same as above
-			sha256_init(&sha256_pass2);
-			sha256_update(&sha256_pass2, hashIn, SHA256_DIGEST_LENGTH);
-			sha256_final(&sha256_pass2, hash2);
-			   
-			hashValid = 1;
-			for (idx = 28 ; idx <SHA256_DIGEST_LENGTH ; idx++){
-				if (hash2[idx] != 0) {
-					hashValid=0 ;
-					break;
-				}
-			}
-			
-			if (iter%(1UL<<24) == 0)
-			//if (iter == 385)
-				dumpIter(hashIn);
-			if (hashValid){
-				printf("Success!!!!\n");
-				hexdump(hashIn, SHA256_DIGEST_LENGTH);
-				printf("From\n");
-				hexdump(hash2, SHA256_DIGEST_LENGTH);
-				
-			}else{
-				//printf(".");
-			}
-		}else{
-			testCombinations(bit+1, endBit+1, hashIn, level-1);
+			printf(".");
+
+		}
+		else
+		{
+			ProcessBits(hashIn, bit+1, endBit+1, level-1);
 		}
 		hashIn[B] ^= 0x80>>b;
 	}
 
 }
+
