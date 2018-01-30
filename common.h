@@ -28,6 +28,7 @@
 	//----------------------------------------------------
 	void msg_set_bit(unsigned char* msg, int offset);
 	void msg_clear_bit(unsigned char* msg, int offset);
+	void msg_flip_bit(unsigned char* msg, int offset);
 	int get_bit(unsigned char* msg, int bit_offset);
 	int	sprintf_bits(char * dest, void const * const src, int const size);
 	char* str_bits(void const * const src, int const size);
