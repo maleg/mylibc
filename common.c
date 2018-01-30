@@ -320,7 +320,9 @@ void ProcessBits(unsigned char hashIn[], int startBit, int endBit, int level)
 	int bit, B, b, iter;
 
 	for (bit=startBit ; bit<=endBit ; bit++){
-		msg_flip_bit(hashIn, bit);
+		B = bit >> 3;
+		b = bit & 0x7;
+		hashIn[B] ^= 0x80>>b;
 
 		if (level == 1)
 		{
@@ -332,25 +334,8 @@ void ProcessBits(unsigned char hashIn[], int startBit, int endBit, int level)
 		{
 			ProcessBits(hashIn, bit+1, endBit+1, level-1);
 		}
-		msg_flip_bit(hashIn, bit);
+		hashIn[B] ^= 0x80>>b;
 	}
 
 }
 
-void ScanBits(unsigned char hashIn[], int level)
-{
-	static int states[8][3] = {{7,7,255},{6,6,254},{5,5,253},{4,4,252},{3,3,251},{2,2,250},{1,1,249},{0,0,248}};
-	int bit, B, b, iter;
-
-	msg_flip_bit(hashIn, states[level][1]);
-
-	if (level == 0)
-	{
-		return;
-	}
-	else
-	{
-		ScanBits(hashIn, level-1);
-	}
-
-}
