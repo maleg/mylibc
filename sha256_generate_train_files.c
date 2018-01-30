@@ -6,6 +6,7 @@
  */
 
 #include "sha256_generate_train_files.h"
+#include "sha256.h"
 
 
 void generate_train_file()
@@ -39,9 +40,9 @@ void generate_train_file()
 
 			expand_bytes(msg_pad, m);
 			//hexdump_uint32_hn("Last16m : ", m, msg_len);
-			sha256inv_init(ctxinv_p, hash, m, 32);
+			sha256inv_init(ctxinv_p, hash, m, 32, 0);
 			sha256inv_transform(ctxinv_p, 0);
-			if ( sha256inv_final(ctxinv_p) != 0){
+			if ( sha256inv_final(ctxinv_p, 0) != 0){
 				printf("Got an invalid reverse sha256\n");
 				exit(EXIT_FAILURE);
 			}

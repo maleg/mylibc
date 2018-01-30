@@ -7,6 +7,7 @@
 
 
 #include "sha256_lisible.h"
+#include "sha256_inverse.h"
 #include "common.h"
 
 #include <stdio.h> // for printf

@@ -3,6 +3,7 @@
 
 /*************************** HEADER FILES ***************************/
 #include <stdlib.h>
+#include <stdint.h> //For uint32_t
 #include <memory.h>
 #include <stdio.h>
 
@@ -18,18 +19,30 @@
 #define SIG1(x) (ROTRIGHT(x,17) ^ ROTRIGHT(x,19) ^ ((x) >> 10))
 
 /**************************** STRUCTURES *****************************/
-struct SHA256_CTX {
+typedef struct {
 	uint32_t state[8];
+	uint8_t data[64];
+	uint32_t a[65];
+	uint32_t b[65];
+	uint32_t c[65];
+	uint32_t d[65];
+	uint32_t e[65];
+	uint32_t f[65];
+	uint32_t g[65];
+	uint32_t h[65];
+	uint32_t t1[65];
+	uint32_t t2[65];
+	uint32_t m[65];
 	int datalen;
-	int bitlen;
-}
+	uint64_t bitlen;
+}SHA256INV_CTX;
 
 /*********************** FUNCTION DEFINITIONS ***********************/
 
 
-void sha256inv_init(SHA256_CTX *ctx, uint32_t* hash, WORD m[16]);
-void sha256inv_transform(SHA256_CTX* ctx);
-int sha256inv_final(SHA256_CTX *ctx, BYTE hash[]);
+void sha256inv_init(SHA256INV_CTX *ctx, uint8_t* hash_bytes, uint32_t m[16], int msg_len, int verbose);
+void sha256inv_transform(SHA256INV_CTX* ctx, int verbose);
+int sha256inv_final(SHA256INV_CTX *ctx, int verbose);
 
 
 

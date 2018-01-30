@@ -1,6 +1,11 @@
 #ifndef _SHA256_H_
 #define _SHA256_H_
 
+#include "sha256_test.h"
+#include "sha256_lisible.h"
+#include "sha256_inverse.h"
+#include "sha256_func_expansion.h"
+#include "sha256_func_bounce.h"
 
 #include <stdint.h>
 #include <endian.h>

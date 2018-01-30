@@ -5,9 +5,10 @@
  *      Author: malego
  */
 
-#include "bounce.h"
+#include "sha256_func_bounce.h"
 #include "common.h"
 #include "sha256_lisible.h"
+#include "sha256_inverse.h"
 
 SHA256INV_CTX ctxinv;
 SHA256_CTX ctx;
@@ -42,9 +43,9 @@ void bounce()
 		//for (i=8 ; i<16 ; i++){
 		//	last_m[i] = ctx_p->m[63-i];
 		//}
-		sha256inv_init(ctxinv_p, test_hash_bytes, last_m, msg_len);
+		sha256inv_init(ctxinv_p, test_hash_bytes, last_m, msg_len, 0);
 		sha256inv_transform(ctxinv_p, 0);
-		ret = sha256inv_final(ctxinv_p);
+		ret = sha256inv_final(ctxinv_p, 0);
 
 		//hexdump_uint32_hn("Msg bytes : ", ctxinv_p->m, 16);
 		if (ret == 0){

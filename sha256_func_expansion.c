@@ -5,6 +5,7 @@
  *      Author: malego
  */
 
+#include "sha256_func_expansion.h"
 #include "sha256_lisible.h"
 #include "common.h"
 

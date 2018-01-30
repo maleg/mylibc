@@ -27,7 +27,7 @@ static const uint32_t k[64] = {
 
 /*********************** FUNCTION DEFINITIONS ***********************/
 
-void sha256inv_init(SHA256INV_CTX *ctx, uint8_t* hash_bytes, uint32_t m[16], int msg_len)
+void sha256inv_init(SHA256INV_CTX *ctx, uint8_t* hash_bytes, uint32_t m[16], int msg_len, int verbose)
 {
 	int idx;
 	uint32_t hash[8];
@@ -95,7 +95,7 @@ void sha256inv_transform(SHA256INV_CTX* ctx, int verbose)
 	if (verbose) printf("Round%d : a=%.8X b=%.8X c=%.8X d=%.8X e=%.8X f=%.8X g=%.8X h=%.8X t1=%.8X t2=%.8X m=%.8X\n", idx, ctx->a[idx], ctx->b[idx], ctx->c[idx], ctx->d[idx], ctx->e[idx], ctx->f[idx], ctx->g[idx], ctx->h[idx], ctx->t1[idx], ctx->t2[idx], ctx->m[idx]);
 }
 
-int sha256inv_final(SHA256INV_CTX* ctx)
+int sha256inv_final(SHA256INV_CTX* ctx, int verbose)
 {
 	int i;
 	int final_state_valid = 1;

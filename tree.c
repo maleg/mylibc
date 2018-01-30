@@ -1,5 +1,7 @@
 
 #include "tree.h"
+#include "common.h"
+#include "art.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -53,7 +55,7 @@ int tree_command(enum command_enum command, const unsigned char* value, int key_
 			if (verbose)
 			{
 				printf("Progress %d Key, %d unique, %d duplicate: ", total_qty, unique_qty, duplicate_qty);
-				hexdump_bytes_hn("", value, key_length);
+				hexdump_bytes_hn("", (unsigned char*)value, key_length);
 			}
 		}
 		break;
@@ -70,14 +72,17 @@ int tree_command(enum command_enum command, const unsigned char* value, int key_
 		}
 
 	case TREE_LOAD_FROM_STRING:
-		tree_load_from_file_string(value, verbose);
+		//Value should be a filename string
+		tree_load_from_file_string((const char*)value, verbose);
 		break;
 	case TREE_LOAD_FROM_BYTES:
-		tree_load_from_file_bytes(value, verbose);
+		//Value should be a filename string
+		tree_load_from_file_bytes((const char*)value, verbose);
 		break;
 
 	case TREE_SAVE:
-		tree_save_to_file(tree_p, value);
+		//Value should be a filename string
+		tree_save_to_file(tree_p, (const char*)value);
 		break;
 
 	}
@@ -100,7 +105,7 @@ static void tree_load_from_file_bytes(const char* src_filename, int print_progre
 	}
 	printf("Loading lookup table from file %s.\n", src_filename);
 
-    fgets(linebuf, sizeof(linebuf), file_p);
+    fgets((char*)linebuf, sizeof(linebuf), file_p);
     ret = fread(linebuf, 21, 1024, file_p);
     while (ret > 0) {
     	for (int i=0 ; i<ret ; i++)

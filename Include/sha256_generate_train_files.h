@@ -8,6 +8,10 @@
 #ifndef SHA256_GENERATE_TRAIN_FILES_H_
 #define SHA256_GENERATE_TRAIN_FILES_H_
 
+
+#include "sha256_lisible.h"
+#include "sha256_inverse.h"
+
 #include <stdint.h> // for uint64_t
 #include <stdio.h> // for printf
 #include <string.h> // for memcpy

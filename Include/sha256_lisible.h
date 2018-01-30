@@ -31,15 +31,20 @@
 typedef struct {
 	uint32_t state[8];
 	BYTE data[64];
+	uint32_t m[64];
 	int datalen;
 	uint64_t bitlen;
 }SHA256_CTX;
 
 
-void sha256_transform(SHA256_CTX *ctx, const uint32_t data[]);
+void sha256_transform(SHA256_CTX *ctx, const uint32_t data[], int verbose);
 void sha256_init(SHA256_CTX *ctx);
-void sha256_update(SHA256_CTX *ctx, const BYTE data[], size_t len);
-void sha256_final(SHA256_CTX *ctx, BYTE hash[]);
+void sha256_update_old(SHA256_CTX *ctx, const BYTE data[], size_t len, int verbose);
+void sha256_update_from_bytes(SHA256_CTX *ctx, const BYTE data[], size_t len, int verbose);
+void sha256_update_from_words(SHA256_CTX *ctx, const uint32_t data[], size_t len, int verbose);
+void sha256_final_words(SHA256_CTX *ctx, uint32_t hash[], int verbose);
+void sha256_final_bytes(SHA256_CTX *ctx, BYTE hash[], int verbose);
+void sha256_final_old(SHA256_CTX *ctx, BYTE hash[], int verbose);
 
 
 #endif /* SHA256_LISIBLE_H_ */

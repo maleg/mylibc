@@ -5,9 +5,10 @@
  *      Author: malego
  */
 
-#include "sha256_test.h"
+#include "sha256.h"
 #include "common.h"
 
+#include <stdlib.h> //For EXIT_FAILURE
 
 
 static int check_sha256fast();
@@ -49,10 +50,10 @@ int check_all()
 		for (size_t j = 0; j < len; j++)
 			msg[j] = (uint8_t)tc->message[j];
 
-		uint32_t hash[STATE_LEN];
+		uint32_t hash[8];
 		sha256_hash(msg, len, hash);
 		if (memcmp(hash, tc->answer, sizeof(tc->answer)) != 0)
-			return false;
+			return 0;
 		free(msg);
 	}
 	if (check_sha256_lisible() != 0)
@@ -114,10 +115,10 @@ static int check_sha256inv(){
 
 	expand_bytes(pad_msg((uint8_t*)test_msg, strlen(test_msg)), m);
 	//hexdump_uint32_hn("Last16m : ", m, 16);
-	sha256inv_init(ctxinv_p, test_hash_bytes, m, 14);
+	sha256inv_init(ctxinv_p, test_hash_bytes, m, 14, 0);
 	sha256inv_transform(ctxinv_p, 0);
 	hexdump_bytes_hn("Msg bytes : ", ctxinv_p->data, 64);
-	return sha256inv_final(ctxinv_p);
+	return sha256inv_final(ctxinv_p, 0);
 
 }
 
@@ -125,7 +126,7 @@ static int check_sha256inv(){
 static int check_sha256_lisible(){
 	uint32_t test_hash_words[8] = {0xF7846F55,0xCF23E14E,0xEBEAB5B4,0xE1550CAD,0x5B509E33,0x48FBC4EF,0xA3A1413D,0x393CB650};
 	uint8_t test_hash_bytes[32];
-	BYTE hash[32] = {0};
+	unsigned char hash[32] = {0};
 	char test_msg[] = "message digest";
 	//char test_msg[] = "ssem egaegid\0\0ts";
 	memcpy_swap32(test_hash_bytes, test_hash_words, 32);
